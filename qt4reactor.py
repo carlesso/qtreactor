@@ -34,6 +34,21 @@ Maintainer: U{Glenn H Tarbox, PhD<mailto:glenn@tarbox.org>}
 Previous maintainer: U{Itamar Shtull-Trauring<mailto:twisted@itamarst.org>}
 Original port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
 Subsequent port by therve
+
+===================================
+
+In this version a "bus" is added. You can subsribe on it by calling:
+
+    |  reactor.bus.subscribe('test_function(int, int)', test_function)
+
+and "emit" all callbacks linked to a signature:
+
+    |  reactor.bus.emit('test_function(int, int)', 1, 2)
+
+You can take a look at bus_test.py
+
+TODO: added parameters check
+
 """
 
 __all__ = ['install']
@@ -116,6 +131,25 @@ class fakeApplication(QEventLoop):
     def exec_(self):
         QEventLoop.exec_(self)
         
+class ReactorBus:
+    """
+    Simple subscription/emitter Bus
+    """
+    slots = {}
+    
+    def subscribe(self, signature, callback):
+        if not signature in self.slots:
+            self.slots[signature] = []
+        self.slots[signature].append({'function': callback})
+        # Maybe a way to serialize parameters
+        # params = eval(signature[signature.index('('):])
+        
+    def emit(self, signature, *args, **kargs):
+        if not signature in self.slots:
+            return
+        for callback in self.slots[signature]:
+            callback['function'](*args, **kargs)
+
 class QTReactor(PosixReactorBase):
     """
     Qt based reactor.
@@ -123,7 +157,7 @@ class QTReactor(PosixReactorBase):
     implements(IReactorFDSet)
 
     _timer = None
-
+    bus = None
     def __init__(self):
         self._reads = {}
         self._writes = {}
@@ -138,6 +172,8 @@ class QTReactor(PosixReactorBase):
         self._blockApp = None
         self._readWriteQ=[]
         
+        self.bus = ReactorBus()
+
         """ some debugging instrumentation """
         self._doSomethingCount=0
         
