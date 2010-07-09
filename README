@@ -1,3 +1,21 @@
+This is a fork of http://github.com/ghtdak/qtreactor
+
+I add the concept of "BUS" to the reactor.
+
+You can subsribe on it by calling:                                          
+                                                                                                              
+    reactor.bus.subscribe('test_function(int, int)', test_function)                                        
+                                                                                                              
+and "emit" all callbacks linked to a signature:                                                               
+                                                                                                              
+    reactor.bus.emit('test_function(int, int)', 1, 2)                                                      
+                                                                                                              
+You can take a look at bus_test.py                                                                            
+                                                                                                              
+TODO: added parameters check
+
+====================
+
 Unpack this directory into your PYTHONPATH.
 
 test with:
